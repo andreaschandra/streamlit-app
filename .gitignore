@@ -1,0 +1,6 @@
+*.csv
+*.pkl
+*.zip
+.vscode
+data/
+__pycache__

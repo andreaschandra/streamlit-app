@@ -23,7 +23,8 @@ gallery_placeholder = st.empty()
 # --- Sidebar Elements ---#
 with st.sidebar:
     with st.form("sdxl_form"):
-        st.info("Configuration")
+        st.info("Menu")
+        with st.expander("")
         submitted = st.form_submit_button(
             "Submit", type="primary", use_container_width=True
         )

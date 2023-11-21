@@ -16,8 +16,8 @@ if "generated_image" not in st.session_state:
     st.session_state.generated_image = None
 
 # --- Setup Replicate Token --- #
-REP_TOKEN = st.secrets["REP_TOKEN"]
-REP_ENDPOINT = st.secrets["REP_ENDPOINT"]
+REP_TOKEN = st.secrets["REPLICATE_API_TOKEN"]
+MODEL_ENDPOINT = st.secrets["MODEL_ENDPOINT"]
 
 # --- Placeholders for Images and Gallery ---#
 generated_image_placeholder = st.empty()
@@ -46,6 +46,7 @@ with st.sidebar:
                     "K_EULER",
                     "PNDM",
                 ],
+                index=5,
             )
             num_inference_steps = st.slider(
                 "# of Inference Steps", value=25, min_value=1, max_value=500
@@ -60,6 +61,7 @@ with st.sidebar:
             refine = st.selectbox(
                 "Refine",
                 ["no_refiner", "expert_ensemble_refiner", "base_image_refiner"],
+                index=1,
             )
             high_noise_frac = st.slider(
                 "High Noise Frac", value=0.8, min_value=0.0, max_value=1.0, step=0.1
@@ -90,7 +92,7 @@ if submitted:
             with generated_image_placeholder.container():
                 all_images = []
                 output = replicate.run(
-                    REP_ENDPOINT,
+                    MODEL_ENDPOINT,
                     input={
                         "prompt": prompt,
                         "negative_prompt": negative_prompt,
@@ -119,32 +121,6 @@ if submitted:
 
                             all_images.append(image)
 
-                            response = requests.get(image, timeout=120)
-
-                st.session_state.all_images = all_images
-
-                zip_io = io.BytesIO()
-
-                # Download image
-                with zipfile.ZipFile(zip_io, "w") as zipf:
-                    for i, image in enumerate(st.session_state.all_images):
-                        response = requests.get(image, timeout=120)
-                        if response.status_code == 200:
-                            image_data = response.content
-
-                            zipf.writestr(f"output_file_{i+1}.png", image_data)
-                        else:
-                            st.error(f"Failed to fetch image {i+1} from {image}")
-
-                st.download_button(
-                    ":red[**Download All Images**]",
-                    data=zip_io.getvalue(),
-                    file_name="output_files.zip",
-                    mime="application/zip",
-                    use_container_width=True,
-                )
         status.update(label="Image generated!", state="complete", expanded=False)
-
-    pass
 else:
     pass
